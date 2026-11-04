@@ -1,27 +1,61 @@
-# Dyuksha
+# 🚨 Dyuksha
 
-**AI-native emergency response command center for coordinating police, fire services, hospitals, ambulances, and rescue teams.**
+### AI-native emergency response command center
+
+> Coordinate **police**, **fire services**, **hospitals**, **ambulances**, and **rescue teams** from one operational dashboard.
+
+[![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)](https://adoptium.net/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.5-6db33f?logo=springboot)](https://spring.io/projects/spring-boot)
+[![Maven](https://img.shields.io/badge/Maven-3.9-C71A36?logo=apachemaven)](https://maven.apache.org/)
+[![Database](https://img.shields.io/badge/Database-H2-blue?logo=h2)](https://www.h2database.com/)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-Proprietary-red)](#license)
 
 Dyuksha is a Spring Boot application. The frontend is served by the backend using Thymeleaf, so no separate frontend server is required.
 
-## Quick start
+<p align="center">
+  <a href="#-quick-start">Quick start</a> ·
+  <a href="#-features">Features</a> ·
+  <a href="#-docker">Docker</a> ·
+  <a href="#-deploying-to-render">Render</a> ·
+  <a href="#-project-structure">Structure</a>
+</p>
 
-### Windows PowerShell
+## ✨ Features
+
+| Area | Capability |
+|---|---|
+| 🗺️ Operations | Live Leaflet map with incident and resource markers |
+| 🚑 Emergencies | Track severity, status, location, and response activity |
+| 🧰 Resources | Manage ambulances, fire units, police, and hospitals |
+| 🤖 Allocation | Coordinate resource recommendations and assignments |
+| 📊 Dashboard | Monitor active incidents, availability, and recent activity |
+| 🗄️ Persistence | File-based H2 database for local development |
+
+## ⚡ Quick start
+
+Open **http://localhost:8080** in your browser.
+
+<details>
+<summary>🪟 Windows PowerShell</summary>
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-### macOS/Linux
+</details>
+
+<details>
+<summary>🐧 macOS / Linux</summary>
 
 ```bash
 chmod +x mvnw
 ./mvnw spring-boot:run
 ```
 
-Open **http://localhost:8080** in your browser.
+</details>
 
-## Requirements
+## 🧩 Requirements
 
 - Java 21 or later
 - Docker (optional)
@@ -33,7 +67,7 @@ Check Java:
 java -version
 ```
 
-## Application URLs
+## 🧭 Application URLs
 
 | URL | Purpose |
 |---|---|
@@ -43,7 +77,7 @@ java -version
 | `/allocation` | Resource allocation |
 | `/h2-console` | H2 database console for local development |
 
-## Configuration
+## ⚙️ Configuration
 
 Configuration is stored in `backend/src/main/resources/application.properties`.
 
@@ -72,7 +106,7 @@ $env:PORT=9090
 PORT=9090 ./mvnw spring-boot:run
 ```
 
-## Database
+## 🗃️ Database
 
 Dyuksha uses a file-based H2 database:
 
@@ -90,7 +124,7 @@ For the local H2 console, use:
 
 The local database is stored in `data/`, which is ignored by Git. Render's filesystem is temporary unless a persistent disk is configured, so configure persistent storage if production data must survive redeployments.
 
-## Docker
+## 🐳 Docker
 
 Build the image:
 
@@ -112,7 +146,7 @@ docker run --rm -e PORT=9090 -p 9090:9090 dyuksha
 
 The root `Dockerfile` builds the application with Maven and runs it on the `PORT` environment variable.
 
-## Deploying to Render
+## ☁️ Deploying to Render
 
 ### Docker deployment
 
@@ -122,6 +156,9 @@ The root `Dockerfile` builds the application with Maven and runs it on the `PORT
 4. Deploy.
 
 Render provides `PORT` automatically, and the application reads it from `server.port=${PORT:8080}`.
+
+> [!IMPORTANT]
+> Render's filesystem is temporary unless a persistent disk is configured. Add persistent storage if production H2 data must survive redeployments.
 
 ### Maven deployment
 
@@ -133,7 +170,7 @@ Use these settings if deploying without Docker:
 | Build command | `./mvnw clean package -DskipTests` |
 | Start command | `java -jar target/dyuksha-0.1.0-SNAPSHOT.jar` |
 
-## Build, test, and run the JAR
+## 🧪 Build, test, and run the JAR
 
 ### Windows PowerShell
 
@@ -151,7 +188,19 @@ java -jar target\dyuksha-0.1.0-SNAPSHOT.jar
 java -jar target/dyuksha-0.1.0-SNAPSHOT.jar
 ```
 
-## Project structure
+## 🏗️ Architecture
+
+```mermaid
+flowchart LR
+    U[User browser] --> T[Thymeleaf templates]
+    T --> C[Spring MVC controllers]
+    C --> S[Services]
+    S --> R[Spring Data repositories]
+    R --> D[(H2 database)]
+    T --> M[Leaflet live map]
+```
+
+## 📁 Project structure
 
 ```text
 dyuksha/
@@ -172,7 +221,23 @@ dyuksha/
 
 The Maven configuration maps `backend/src` and `frontend/` into the standard Spring Boot build, so the existing Maven and Docker commands continue to work after the folder organization.
 
-## Technology
+<details>
+<summary>🔍 Where should I make changes?</summary>
+
+| If you want to change... | Edit... |
+|---|---|
+| A page or Thymeleaf fragment | `frontend/templates/` |
+| Styling | `frontend/static/css/` |
+| Dashboard/map behavior | `frontend/static/js/dashboard.js` |
+| Routes and HTTP handling | `backend/src/main/java/com/dyuksha/controller/` |
+| Business logic | `backend/src/main/java/com/dyuksha/service/` |
+| Database entities | `backend/src/main/java/com/dyuksha/model/` |
+| Database queries | `backend/src/main/java/com/dyuksha/repository/` |
+| Application settings | `backend/src/main/resources/application.properties` |
+
+</details>
+
+## 🛠️ Technology
 
 - Java 21
 - Spring Boot 3.3.5
@@ -182,6 +247,16 @@ The Maven configuration maps `backend/src` and `frontend/` into the standard Spr
 - Maven
 - Leaflet for the live operational map
 
-## License
+## ✅ Useful checks
+
+```bash
+./mvnw test
+./mvnw clean package
+docker build -t dyuksha .
+```
+
+On Windows, replace `./mvnw` with `.\mvnw.cmd`.
+
+## 📜 License
 
 Proprietary — all rights reserved.

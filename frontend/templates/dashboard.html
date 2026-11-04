@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Dyuksha — AI-Native Emergency Response Command Center"/>
+    <title>Command Center &mdash; Dyuksha</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <!-- Dashboard styles -->
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body>
+
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+<div class="app-shell">
+
+    <!-- ========= SIDEBAR ========= -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <!-- ========= MAIN WRAPPER ========= -->
+    <div class="main-wrapper">
+
+        <!-- ========= TOPBAR ========= -->
+        <div th:replace="~{fragments/topbar :: topbar}"></div>
+
+        <!-- ========= CONTENT ========= -->
+        <main class="content-area" id="mainContent" role="main">
+
+            <!-- ===== STATS ROW ===== -->
+            <section class="stats-grid" aria-label="Overview statistics">
+
+                <!-- Active Emergencies -->
+                <div class="stat-card critical">
+                    <div class="stat-icon critical" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </div>
+                    <div class="stat-body">
+                        <div class="stat-value" th:text="${activeEmergencies}">12</div>
+                        <div class="stat-label">
+                            Active Emergencies
+                            <span class="stat-delta up" th:if="${emergencyDelta != null}" th:text="'&#43;' + ${emergencyDelta}">+2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Critical Emergencies -->
+                <div class="stat-card high">
+                    <div class="stat-icon high" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                    </div>
+                    <div class="stat-body">
+                        <div class="stat-value" th:text="${criticalEmergencies}">3</div>
+                        <div class="stat-label">Critical Incidents</div>
+                    </div>
+                </div>
+
+                <!-- Available Ambulances -->
+                <div class="stat-card low">
+                    <div class="stat-icon low" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="1" y="3" width="15" height="13" rx="1"/>
+                            <path d="M16 8h4l3 3v5h-7V8z"/>
+                            <circle cx="5.5" cy="18.5" r="2.5"/>
+                            <circle cx="18.5" cy="18.5" r="2.5"/>
+                        </svg>
+                    </div>
+                    <div class="stat-body">
+                        <div class="stat-value" th:text="${availableAmbulances}">8</div>
+                        <div class="stat-label">Available Ambulances</div>
+                    </div>
+                </div>
+
+                <!-- Rescue Teams -->
+                <div class="stat-card info">
+                    <div class="stat-icon info" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                        </svg>
+                    </div>
+                    <div class="stat-body">
+                        <div class="stat-value" th:text="${availableRescueTeams}">5</div>
+                        <div class="stat-label">Rescue Teams Ready</div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ===== MAIN GRID: MAP + EMERGENCIES ===== -->
+            <section class="main-grid">
+
+                <!-- === MAP PANEL === -->
+                <div class="map-panel" aria-label="Operational map">
+                    <div class="map-header">
+                        <div class="map-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                                <line x1="8" y1="2" x2="8" y2="18"/>
+                                <line x1="16" y1="6" x2="16" y2="22"/>
+                            </svg>
+                            Live Operational Map
+                        </div>
+                        <div class="map-controls">
+                            <button class="map-control-btn active" id="mapToggleEmergencies" data-layer="emergencies">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                                </svg>
+                                Incidents
+                            </button>
+                            <button class="map-control-btn active" id="mapToggleResources" data-layer="resources">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                Resources
+                            </button>
+                        </div>
+                    </div>
+                    <div class="map-container">
+                        <div id="map" role="application" aria-label="Emergency operations map"></div>
+                        <!-- Map Legend -->
+                        <div class="map-legend" aria-label="Map legend">
+                            <div class="map-legend-title">Legend</div>
+                            <div class="map-legend-item"><span class="legend-dot critical"></span>Critical Incident</div>
+                            <div class="map-legend-item"><span class="legend-dot high"></span>High Severity</div>
+                            <div class="map-legend-item"><span class="legend-dot medium"></span>Medium Severity</div>
+                            <div class="map-legend-item"><span class="legend-dot ambulance"></span>Ambulance</div>
+                            <div class="map-legend-item"><span class="legend-dot fire"></span>Fire &amp; Rescue</div>
+                            <div class="map-legend-item"><span class="legend-dot police"></span>Police</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === EMERGENCIES PANEL === -->
+                <div class="emergencies-panel" aria-label="Active emergencies">
+                    <div class="emg-header">
+                        <div class="emg-header-row">
+                            <div class="emg-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                                Active Incidents
+                            </div>
+                            <span class="emg-count" id="emg-count">Showing 8</span>
+                        </div>
+                        <!-- Severity filter tabs -->
+                        <div class="filter-tabs" role="tablist" aria-label="Filter by severity">
+                            <button class="filter-tab active-filter" data-filter="all"
+                                    role="tab" aria-selected="true">All</button>
+                            <button class="filter-tab" data-filter="critical"
+                                    role="tab" aria-selected="false">Critical</button>
+                            <button class="filter-tab" data-filter="high"
+                                    role="tab" aria-selected="false">High</button>
+                            <button class="filter-tab" data-filter="medium"
+                                    role="tab" aria-selected="false">Medium</button>
+                            <button class="filter-tab" data-filter="low"
+                                    role="tab" aria-selected="false">Low</button>
+                        </div>
+                    </div>
+
+                    <!-- Emergency items rendered by JS -->
+                    <div class="emg-list" id="emergencyList" role="list" aria-live="polite" aria-label="Emergency list">
+                        <!-- populated by dashboard.js -->
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ===== BOTTOM GRID: RESOURCES + ACTIVITY ===== -->
+            <section class="bottom-grid">
+
+                <!-- === RESOURCES PANEL === -->
+                <div class="resources-panel" aria-label="Resource availability">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                            </svg>
+                            Resource Availability
+                        </div>
+                    </div>
+
+                    <!-- Resource type tabs -->
+                    <div class="resources-tabs" role="tablist" aria-label="Resource categories">
+                        <button class="res-tab active" data-res-tab="ambulances" role="tab" aria-selected="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="1" y="3" width="15" height="13" rx="1"/>
+                                <path d="M16 8h4l3 3v5h-7V8z"/>
+                                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                            </svg>
+                            Ambulances
+                        </button>
+                        <button class="res-tab" data-res-tab="fire" role="tab" aria-selected="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                                <path d="M12 8c-1.5 0-2.5 1.5-2 3 .3.9.5 1.5.5 2.5a2 2 0 002 2 2 2 0 002-2c0-1 .2-1.6.5-2.5.5-1.5-.5-3-2-3z"/>
+                            </svg>
+                            Fire &amp; Rescue
+                        </button>
+                        <button class="res-tab" data-res-tab="police" role="tab" aria-selected="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            Police
+                        </button>
+                        <button class="res-tab" data-res-tab="hospitals" role="tab" aria-selected="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 5l0 14M5 12l14 0"/>
+                            </svg>
+                            Hospitals
+                        </button>
+                    </div>
+
+                    <div class="res-content" id="resContent">
+                        <!-- populated by dashboard.js -->
+                    </div>
+                </div>
+
+                <!-- === ACTIVITY FEED === -->
+                <div class="activity-panel" aria-label="Recent system activity">
+                    <div class="activity-header">
+                        <div class="activity-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                            Recent Activity
+                        </div>
+                    </div>
+                    <div class="activity-feed" id="activityFeed" role="log" aria-live="polite" aria-label="Activity log">
+                        <!-- populated by dashboard.js -->
+                    </div>
+                </div>
+
+            </section>
+
+        </main><!-- /content-area -->
+
+    </div><!-- /main-wrapper -->
+
+</div><!-- /app-shell -->
+
+<!-- Inject server-side data for JS consumption -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    window.DYUKSHA_CONFIG = {
+        emergencies: /*[[${emergencyMapData}]]*/ [],
+        resources: /*[[${resourceMapData}]]*/ [],
+        groupedResources: /*[[${groupedResourcesData}]]*/ {},
+        recentActivity: /*[[${recentActivityData}]]*/ [],
+        stats: {
+            active:   /*[[${activeEmergencies}]]*/   0,
+            critical: /*[[${criticalEmergencies}]]*/ 0,
+            ambulances: /*[[${availableAmbulances}]]*/ 0,
+            rescueTeams: /*[[${availableRescueTeams}]]*/ 0
+        }
+    };
+    /*]]>*/
+</script>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Dashboard JS -->
+<script th:src="@{/js/dashboard.js}"></script>
+
+</body>
+</html>

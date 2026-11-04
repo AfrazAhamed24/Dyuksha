@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<aside th:fragment="sidebar" class="sidebar" id="appSidebar" aria-label="Main navigation">
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+        <div class="brand-icon-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M12 8v4M12 16h.01"/>
+            </svg>
+        </div>
+        <div class="brand-text">
+            <span class="brand-name">Dyuksha</span>
+            <span class="brand-tagline">Emergency Response</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav" aria-label="Primary">
+
+        <div class="nav-section">
+            <span class="nav-section-label">Operations</span>
+
+            <a href="/" class="nav-item" th:classappend="${activePage == 'dashboard'} ? ' active' : ''"
+               aria-label="Command Center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                <span>Command Center</span>
+            </a>
+
+            <a href="/emergencies" class="nav-item" th:classappend="${activePage == 'emergencies'} ? ' active' : ''"
+               aria-label="Emergencies">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span>Emergencies</span>
+                <span class="nav-badge" th:text="${activeEmergencies}">12</span>
+            </a>
+
+            <a href="/allocation" class="nav-item" th:classappend="${activePage == 'allocation'} ? ' active' : ''"
+               aria-label="Resource Allocation">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+                    <path d="M6 9v3M18 9V6a3 3 0 00-3-3H9"/>
+                </svg>
+                <span>Resource Allocation</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-section-label">Assets</span>
+
+            <a href="/resources" class="nav-item" th:classappend="${activePage == 'resources'} ? ' active' : ''"
+               aria-label="Resources">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                </svg>
+                <span>Resources</span>
+            </a>
+
+            <a href="/flood" class="nav-item" th:classappend="${activePage == 'flood'} ? ' active' : ''"
+               aria-label="Flood Monitoring">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+                <span>Flood Monitoring</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-section-label">Logs</span>
+
+            <a href="/activity" class="nav-item" th:classappend="${activePage == 'activity'} ? ' active' : ''"
+               aria-label="Activity Log">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                <span>Activity Log</span>
+            </a>
+        </div>
+
+    </nav>
+
+    <!-- Footer -->
+    <div class="sidebar-footer">
+        <div class="sys-row">
+            <span class="sys-label">System</span>
+            <span class="sys-status operational">Operational</span>
+        </div>
+        <div class="sys-clock" id="sidebar-clock">--:-- IST</div>
+    </div>
+
+</aside>
+
+</body>
+</html>
+

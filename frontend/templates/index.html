@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Dyuksha — Emergency Response Platform</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+    <main class="landing">
+        <div class="card">
+            <h1 class="title">Dyuksha</h1>
+            <p class="subtitle">AI-Native Emergency Response Platform</p>
+            <div class="status">
+                <span class="status-dot"></span>
+                <span class="status-text">System Status: <strong th:text="${systemStatus}">Operational</strong></span>
+            </div>
+            <p class="note">Platform initializing — full dashboard coming in the next phase.</p>
+        </div>
+    </main>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

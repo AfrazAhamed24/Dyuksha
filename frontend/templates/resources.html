@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Resources &mdash; Dyuksha</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+    <link rel="stylesheet" th:href="@{/css/emergencies.css}"/>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+<div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/topbar :: topbar}"></div>
+
+        <!-- CONTENT -->
+        <main class="content-area" id="mainContent" role="main">
+
+            <!-- Flash messages -->
+            <div th:if="${successMessage}" class="flash flash-success" role="alert">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span th:text="${successMessage}"></span>
+                <button class="flash-close" aria-label="Dismiss" onclick="this.parentElement.remove()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div th:if="${errorMessage}" class="flash" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--critical-text);" role="alert">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--critical)">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span th:text="${errorMessage}"></span>
+                <button class="flash-close" aria-label="Dismiss" onclick="this.parentElement.remove()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Page header -->
+            <div class="page-header">
+                <div class="page-header-left">
+                    <h2 class="page-h2">Multi-Agency Resources</h2>
+                    <span class="page-subtitle" th:text="${resources.size()} + ' registered units/facilities'">0 units</span>
+                </div>
+                <button class="btn-primary" id="openResourceModalBtn" aria-haspopup="dialog">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Register Resource
+                </button>
+            </div>
+
+            <!-- Summary Stat Cards -->
+            <section class="stats-grid" style="margin-bottom: 16px;" aria-label="Resource summary">
+                <div class="stat-card info">
+                    <div class="stat-icon info">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                        </svg>
+                    </div>
+                    <div class="stat-body">
+                        <div class="stat-value" th:text="${totalResources}">0</div>
+                        <div class="stat-label">Total Resources</div>
+                    </div>
+                </div>
+
+                <div class="stat-card low">
+                    <div class="stat-icon low">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
+                    <div class="stat-body">
+                        <div class="stat-value" th:text="${availableResources}">0</div>
+                        <div class="stat-label">Available / Standby</div>
+                    </div>
+                </div>
+
+                <div class="stat-card high">
+                    <div class="stat-icon high">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="stat-body">
+                        <div class="stat-value" th:text="${assignedResources}">0</div>
+                        <div class="stat-label">Currently Assigned</div>
+                    </div>
+                </div>
+
+                <div class="stat-card critical">
+                    <div class="stat-icon critical">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                        </svg>
+                    </div>
+                    <div class="stat-body">
+                        <div class="stat-value" th:text="${offlineResources}">0</div>
+                        <div class="stat-label">Offline / Maintenance</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filter bar -->
+            <form class="filter-bar" method="get" th:action="@{/resources}" role="search">
+                <div class="filter-group">
+                    <label class="filter-label" for="resFilterType">Resource Type</label>
+                    <select id="resFilterType" name="type" class="filter-select">
+                        <option value="">All Resource Types</option>
+                        <option th:each="t : ${types}"
+                                th:value="${t.name()}"
+                                th:text="${t.displayName}"
+                                th:selected="${selectedType != null and selectedType == t}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label" for="resFilterStatus">Availability</label>
+                    <select id="resFilterStatus" name="status" class="filter-select">
+                        <option value="">All Statuses</option>
+                        <option th:each="st : ${statuses}"
+                                th:value="${st.name()}"
+                                th:text="${st.displayName}"
+                                th:selected="${selectedStatus != null and selectedStatus == st}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn-filter">Apply Filters</button>
+                    <a th:href="@{/resources}" class="btn-filter-clear">Clear</a>
+                </div>
+            </form>
+
+            <!-- Resources Table -->
+            <div class="panel" aria-label="Resources table">
+                <div th:if="${resources.empty}" class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <p>No resources match the selected criteria.</p>
+                    <a th:href="@{/resources}" class="btn-filter-clear">Reset filters</a>
+                </div>
+
+                <div th:unless="${resources.empty}" class="table-wrap">
+                    <table class="data-table" role="table" aria-label="Registered resources">
+                        <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Unit / Facility Name</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Agency</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Capacity / Assignment</th>
+                            <th scope="col" class="col-actions">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="r : ${resources}">
+                            <td class="cell-id" th:text="${r.formattedId}">AMB-01</td>
+                            <td class="cell-title">
+                                <span class="title-text" th:text="${r.name}">Unit Name</span>
+                            </td>
+                            <td class="cell-type" th:text="${r.type.displayName}">Ambulance</td>
+                            <td style="color: var(--text-secondary)" th:text="${r.agencyName}">Agency</td>
+                            <td class="cell-location">
+                                <span class="location-text">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+                                    </svg>
+                                    <span th:text="${r.currentLocation}">Location</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="avail-dot" th:classappend="${r.status.cssClass}" th:text="${r.status.displayName}">Available</span>
+                            </td>
+                            <td>
+                                <span th:if="${r.type.name() == 'HOSPITAL' and r.totalBeds != null}">
+                                    <strong th:text="${r.availableBeds}">0</strong>/<span th:text="${r.totalBeds}">0</span> beds free
+                                    <span class="badge" th:classappend="${r.capacityStatus != null ? r.capacityStatus.cssClass : 'normal'}" style="margin-left: 4px;" th:text="${r.capacityStatus != null ? r.capacityStatus.displayName : 'Normal'}">Normal</span>
+                                </span>
+                                <span th:if="${r.assignedEmergencyId != null}">
+                                    <a th:href="@{/emergencies/{id}(id=${r.assignedEmergencyId})}" style="color: var(--brand); font-weight: 500;" th:text="'Assigned to EM-' + ${r.assignedEmergencyId}">EM-001</a>
+                                </span>
+                                <span th:if="${r.type.name() != 'HOSPITAL' and r.assignedEmergencyId == null}" style="color: var(--text-muted)">&mdash;</span>
+                            </td>
+                            <td class="cell-actions">
+                                <a th:href="@{/resources/{id}(id=${r.id})}" class="action-btn" aria-label="View resource details">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    Manage
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<!-- ===== REGISTER RESOURCE MODAL ===== -->
+<div class="modal-backdrop" id="resourceModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="resModalTitle" aria-hidden="true">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title" id="resModalTitle">Register New Resource</h2>
+            <button class="modal-close" id="closeResourceModalBtn" aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <form class="modal-body" th:action="@{/resources}" method="post" th:object="${form}" novalidate>
+            <div class="form-row">
+                <div class="form-group" th:classappend="${#fields.hasErrors('type')} ? ' has-error' : ''">
+                    <label class="form-label" for="rfType">Resource Type <span class="req">*</span></label>
+                    <select id="rfType" class="form-select" th:field="*{type}">
+                        <option value="">Select type…</option>
+                        <option th:each="t : ${types}" th:value="${t.name()}" th:text="${t.displayName}"></option>
+                    </select>
+                    <span class="field-error" th:if="${#fields.hasErrors('type')}" th:errors="*{type}"></span>
+                </div>
+
+                <div class="form-group" th:classappend="${#fields.hasErrors('agencyName')} ? ' has-error' : ''">
+                    <label class="form-label" for="rfAgency">Agency Name <span class="req">*</span></label>
+                    <input id="rfAgency" type="text" class="form-input" placeholder="e.g. BBMP, Fire Dept, 108" th:field="*{agencyName}" maxlength="150"/>
+                    <span class="field-error" th:if="${#fields.hasErrors('agencyName')}" th:errors="*{agencyName}"></span>
+                </div>
+            </div>
+
+            <div class="form-group" th:classappend="${#fields.hasErrors('name')} ? ' has-error' : ''">
+                <label class="form-label" for="rfName">Resource / Unit Name <span class="req">*</span></label>
+                <input id="rfName" type="text" class="form-input" placeholder="e.g. Ambulance Alpha-3, Engine 12" th:field="*{name}" maxlength="150"/>
+                <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+            </div>
+
+            <div class="form-group" th:classappend="${#fields.hasErrors('currentLocation')} ? ' has-error' : ''">
+                <label class="form-label" for="rfLocation">Current Location <span class="req">*</span></label>
+                <input id="rfLocation" type="text" class="form-input" placeholder="e.g. Jayanagar 4th Block" th:field="*{currentLocation}" maxlength="250"/>
+                <span class="field-error" th:if="${#fields.hasErrors('currentLocation')}" th:errors="*{currentLocation}"></span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" th:classappend="${#fields.hasErrors('latitude')} ? ' has-error' : ''">
+                    <label class="form-label" for="rfLat">Latitude <span class="req">*</span></label>
+                    <input id="rfLat" type="number" class="form-input" placeholder="12.9716" step="0.000001" min="-90" max="90" th:field="*{latitude}"/>
+                    <span class="field-error" th:if="${#fields.hasErrors('latitude')}" th:errors="*{latitude}"></span>
+                </div>
+
+                <div class="form-group" th:classappend="${#fields.hasErrors('longitude')} ? ' has-error' : ''">
+                    <label class="form-label" for="rfLng">Longitude <span class="req">*</span></label>
+                    <input id="rfLng" type="number" class="form-input" placeholder="77.5946" step="0.000001" min="-180" max="180" th:field="*{longitude}"/>
+                    <span class="field-error" th:if="${#fields.hasErrors('longitude')}" th:errors="*{longitude}"></span>
+                </div>
+            </div>
+
+            <!-- Hospital capacity group (toggleable or visible) -->
+            <div id="hospitalFields" class="form-row" style="background: var(--bg-elevated); padding: 10px; border-radius: var(--r-md); border: 1px solid var(--border-subtle);">
+                <div class="form-group">
+                    <label class="form-label" for="rfAvailBeds">Available ER Beds</label>
+                    <input id="rfAvailBeds" type="number" class="form-input" placeholder="e.g. 15" min="0" th:field="*{availableBeds}"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="rfTotalBeds">Total ER Beds</label>
+                    <input id="rfTotalBeds" type="number" class="form-input" placeholder="e.g. 50" min="0" th:field="*{totalBeds}"/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="rfCapabilities">Operational Capabilities / Equipment</label>
+                <textarea id="rfCapabilities" class="form-textarea" rows="2" placeholder="e.g. ICU ventilator, hydraulic cutter, blood bank" th:field="*{capabilities}" maxlength="500"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost" id="cancelResourceModalBtn">Cancel</button>
+                <button type="submit" class="btn-primary">Register Resource</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="resAutoOpenTrigger" th:data-open="${showCreateModal == true ? 'true' : 'false'}" style="display:none" aria-hidden="true"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('resourceModalBackdrop');
+        const openBtn = document.getElementById('openResourceModalBtn');
+        const closeBtn = document.getElementById('closeResourceModalBtn');
+        const cancelBtn = document.getElementById('cancelResourceModalBtn');
+        const autoTrigger = document.getElementById('resAutoOpenTrigger');
+
+        const open = () => modal.classList.add('open');
+        const close = () => modal.classList.remove('open');
+
+        if (openBtn) openBtn.addEventListener('click', open);
+        if (closeBtn) closeBtn.addEventListener('click', close);
+        if (cancelBtn) cancelBtn.addEventListener('click', close);
+        if (modal) modal.addEventListener('click', e => { if (e.target === modal) close(); });
+
+        if (autoTrigger && autoTrigger.dataset.open === 'true') {
+            open();
+        }
+    });
+</script>
+<script th:src="@{/js/dashboard.js}"></script>
+
+</body>
+</html>
+

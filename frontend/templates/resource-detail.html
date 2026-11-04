@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${resource.formattedId} + ' &mdash; Dyuksha'">Resource &mdash; Dyuksha</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+    <link rel="stylesheet" th:href="@{/css/emergencies.css}"/>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+<div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/topbar :: topbar}"></div>
+
+        <!-- CONTENT -->
+        <main class="content-area" id="mainContent" role="main">
+
+            <!-- Flash messages -->
+            <div th:if="${successMessage}" class="flash flash-success" role="alert">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span th:text="${successMessage}"></span>
+                <button class="flash-close" aria-label="Dismiss" onclick="this.parentElement.remove()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div th:if="${errorMessage}" class="flash" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--critical-text);" role="alert">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--critical)">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span th:text="${errorMessage}"></span>
+                <button class="flash-close" aria-label="Dismiss" onclick="this.parentElement.remove()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Page header -->
+            <div class="page-header">
+                <div class="page-header-left">
+                    <a th:href="@{/resources}" class="back-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        All Resources
+                    </a>
+                    <h2 class="page-h2" th:text="${resource.formattedId} + ' — ' + ${resource.name}">AMB-01 — Unit</h2>
+                    <span class="avail-dot" th:classappend="${resource.status.cssClass}" th:text="${resource.status.displayName}">Available</span>
+                </div>
+            </div>
+
+            <!-- Detail Grid -->
+            <div class="detail-grid">
+
+                <div class="detail-main">
+                    <!-- General Info -->
+                    <div class="panel detail-panel">
+                        <div class="panel-header">
+                            <span class="panel-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                                </svg>
+                                Resource Specification
+                            </span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="detail-fields">
+                                <div class="detail-row-2">
+                                    <div class="detail-field">
+                                        <span class="detail-field-label">Unit / Facility Name</span>
+                                        <span class="detail-field-value primary" th:text="${resource.name}">Name</span>
+                                    </div>
+                                    <div class="detail-field">
+                                        <span class="detail-field-label">Resource Type</span>
+                                        <span class="detail-field-value" th:text="${resource.type.displayName}">Type</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-row-2">
+                                    <div class="detail-field">
+                                        <span class="detail-field-label">Agency</span>
+                                        <span class="detail-field-value" th:text="${resource.agencyName}">Agency</span>
+                                    </div>
+                                    <div class="detail-field">
+                                        <span class="detail-field-label">Current Status</span>
+                                        <span class="avail-dot" th:classappend="${resource.status.cssClass}" th:text="${resource.status.displayName}">Available</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-field" th:if="${resource.type.name() == 'HOSPITAL'}">
+                                    <span class="detail-field-label">Emergency Capacity</span>
+                                    <div style="background: var(--bg-elevated); padding: 12px; border-radius: var(--r-md); border: 1px solid var(--border-subtle); display: flex; gap: 20px; align-items: center;">
+                                        <div>
+                                            <span style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);" th:text="${resource.availableBeds}">14</span>
+                                            <span style="color: var(--text-muted); font-size: 0.8rem;"> / <span th:text="${resource.totalBeds}">50</span> beds free</span>
+                                        </div>
+                                        <div>
+                                            <span class="badge" th:classappend="${resource.capacityStatus != null ? resource.capacityStatus.cssClass : 'normal'}" th:text="${resource.capacityStatus != null ? resource.capacityStatus.displayName : 'Normal'}">Normal Capacity</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="detail-field" th:if="${resource.capabilities != null and !resource.capabilities.blank}">
+                                    <span class="detail-field-label">Operational Capabilities</span>
+                                    <p class="detail-field-desc" th:text="${resource.capabilities}">Capabilities description</p>
+                                </div>
+
+                                <!-- Current Assignment -->
+                                <div class="detail-field" th:if="${assignedEmergency != null}">
+                                    <span class="detail-field-label">Active Emergency Assignment</span>
+                                    <div style="background: var(--bg-elevated); padding: 12px; border-radius: var(--r-md); border: 1px solid var(--border-strong); display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <a th:href="@{/emergencies/{id}(id=${assignedEmergency.id})}" style="font-weight: 600; color: var(--brand); font-size: 0.95rem;" th:text="${assignedEmergency.formattedId} + ' — ' + ${assignedEmergency.title}">EM-001</a>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;" th:text="${assignedEmergency.locationName}">Location</div>
+                                        </div>
+                                        <form th:action="@{/resources/{id}/complete(id=${resource.id})}" method="post">
+                                            <button type="submit" class="btn-primary" style="background: var(--low); font-size: 0.75rem; padding: 6px 10px;">
+                                                Release / Complete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mini Map -->
+                    <div class="panel detail-panel" th:if="${resource.latitude != null and resource.longitude != null}">
+                        <div class="panel-header">
+                            <span class="panel-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                Staging / Station Location
+                            </span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="detail-row-2" style="margin-bottom:12px">
+                                <div class="detail-field">
+                                    <span class="detail-field-label">Base Location</span>
+                                    <span class="detail-field-value" th:text="${resource.currentLocation}">Location</span>
+                                </div>
+                                <div class="detail-field">
+                                    <span class="detail-field-label">Coordinates</span>
+                                    <span class="detail-field-value coord-text">
+                                        <span th:text="${resource.latitude}">0.0</span>,
+                                        <span th:text="${resource.longitude}">0.0</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="resDetailMap" class="detail-map"
+                                 th:data-lat="${resource.latitude}"
+                                 th:data-lng="${resource.longitude}"
+                                 th:data-name="${resource.name}"
+                                 th:data-type="${resource.type.name()}"
+                                 aria-label="Resource station map">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-sidebar">
+                    <!-- Update Status -->
+                    <div class="panel detail-panel">
+                        <div class="panel-header">
+                            <span class="panel-title">Manage Availability</span>
+                        </div>
+                        <div class="panel-body">
+                            <form th:action="@{/resources/{id}/status(id=${resource.id})}" method="post">
+                                <div class="form-group">
+                                    <label class="form-label" for="newResStatus">Availability Status</label>
+                                    <select id="newResStatus" name="status" class="form-select">
+                                        <option th:each="st : ${statuses}"
+                                                th:value="${st.name()}"
+                                                th:text="${st.displayName}"
+                                                th:disabled="${resource.status.name() == 'ASSIGNED' and st.name() == 'AVAILABLE'}"
+                                                th:selected="${resource.status == st}">
+                                        </option>
+                                    </select>
+                                    <span th:if="${resource.status.name() == 'ASSIGNED'}" class="field-error" style="margin-top: 4px;">
+                                        Release assignment first to set Available.
+                                    </span>
+                                </div>
+                                <button type="submit" class="btn-primary btn-full">
+                                    Update Status
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Assign to active incident (if available) -->
+                    <div class="panel detail-panel" th:if="${resource.status.name() != 'ASSIGNED' and resource.type.name() != 'HOSPITAL'}">
+                        <div class="panel-header">
+                            <span class="panel-title">Deploy / Assign to Incident</span>
+                        </div>
+                        <div class="panel-body">
+                            <form th:action="@{/resources/{id}/assign(id=${resource.id})}" method="post">
+                                <div class="form-group">
+                                    <label class="form-label" for="assignIncident">Select Active Incident</label>
+                                    <select id="assignIncident" name="emergencyId" class="form-select" required>
+                                        <option value="">Select emergency...</option>
+                                        <option th:each="em : ${activeEmergenciesList}"
+                                                th:value="${em.id}"
+                                                th:text="${em.formattedId} + ' — ' + ${em.title} + ' (' + ${em.severity.displayName} + ')'">
+                                        </option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn-primary btn-full">
+                                    Dispatch Resource
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs=" crossorigin=""></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const mapEl = document.getElementById('resDetailMap');
+        if (!mapEl || typeof L === 'undefined') return;
+
+        const lat = parseFloat(mapEl.dataset.lat);
+        const lng = parseFloat(mapEl.dataset.lng);
+        const name = mapEl.dataset.name || 'Resource';
+        const type = mapEl.dataset.type || 'AMBULANCE';
+
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const map = L.map('resDetailMap', {
+            center: [lat, lng],
+            zoom: 14,
+            zoomControl: true,
+            attributionControl: false
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        const colorMap = {
+            'AMBULANCE': '#3b82f6',
+            'FIRE_AND_RESCUE': '#a855f7',
+            'POLICE_UNIT': '#0ea5e9',
+            'HOSPITAL': '#14b8a6'
+        };
+        const color = colorMap[type] || '#3b82f6';
+        const abbrev = type === 'AMBULANCE' ? 'A' : type === 'FIRE_AND_RESCUE' ? 'F' : type === 'POLICE_UNIT' ? 'P' : 'H';
+
+        const html = `<div style="
+            width:28px;height:28px;background:${color}22;border:2px solid ${color};
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-size:11px;font-weight:700;color:${color};box-shadow:0 2px 8px rgba(0,0,0,0.6);
+            font-family:Inter,-apple-system,sans-serif;">${abbrev}</div>`;
+
+        const icon = L.divIcon({ html, className: '', iconSize: [28, 28], iconAnchor: [14, 14] });
+        L.marker([lat, lng], { icon }).addTo(map).bindPopup(`<b>${name}</b>`).openPopup();
+
+        setTimeout(() => map.invalidateSize(), 200);
+    });
+</script>
+<script th:src="@{/js/dashboard.js}"></script>
+
+</body>
+</html>
+

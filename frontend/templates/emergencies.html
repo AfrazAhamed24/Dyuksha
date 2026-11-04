@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Emergencies &mdash; Dyuksha</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+    <link rel="stylesheet" th:href="@{/css/emergencies.css}"/>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+<div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/topbar :: topbar}"></div>
+
+        <!-- CONTENT -->
+        <main class="content-area" id="mainContent" role="main">
+
+            <!-- Flash messages -->
+            <div th:if="${successMessage}" class="flash flash-success" role="alert">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span th:text="${successMessage}"></span>
+                <button class="flash-close" aria-label="Dismiss" onclick="this.parentElement.remove()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Page header -->
+            <div class="page-header">
+                <div class="page-header-left">
+                    <h2 class="page-h2">Emergency Incidents</h2>
+                    <span class="page-subtitle"
+                          th:text="${emergencies.size()} + ' record(s) shown'">0 records shown</span>
+                </div>
+                <button class="btn-primary" id="openModalBtn" aria-haspopup="dialog">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Report Emergency
+                </button>
+            </div>
+
+            <!-- Filter bar -->
+            <form class="filter-bar" method="get" th:action="@{/emergencies}" role="search">
+                <div class="filter-group">
+                    <label class="filter-label" for="filterType">Type</label>
+                    <select id="filterType" name="type" class="filter-select">
+                        <option value="">All Types</option>
+                        <option th:each="t : ${types}"
+                                th:value="${t.name()}"
+                                th:text="${t.displayName}"
+                                th:selected="${selectedType != null and selectedType == t}">
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" for="filterSeverity">Severity</label>
+                    <select id="filterSeverity" name="severity" class="filter-select">
+                        <option value="">All Severities</option>
+                        <option th:each="s : ${severities}"
+                                th:value="${s.name()}"
+                                th:text="${s.displayName}"
+                                th:selected="${selectedSeverity != null and selectedSeverity == s}">
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" for="filterStatus">Status</label>
+                    <select id="filterStatus" name="status" class="filter-select">
+                        <option value="">All Statuses</option>
+                        <option th:each="st : ${statuses}"
+                                th:value="${st.name()}"
+                                th:text="${st.displayName}"
+                                th:selected="${selectedStatus != null and selectedStatus == st}">
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-filter">Apply Filters</button>
+                    <a th:href="@{/emergencies}" class="btn-filter-clear">Clear</a>
+                </div>
+            </form>
+
+            <!-- Emergency table -->
+            <div class="panel" aria-label="Emergency incidents table">
+                <div th:if="${emergencies.empty}" class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <p>No emergencies match the selected filters.</p>
+                    <a th:href="@{/emergencies}" class="btn-filter-clear">Clear filters</a>
+                </div>
+
+                <div th:unless="${emergencies.empty}" class="table-wrap">
+                    <table class="data-table" role="table" aria-label="Emergency incidents">
+                        <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Severity</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Reported</th>
+                            <th scope="col" class="col-actions">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="em : ${emergencies}">
+                            <td class="cell-id" th:text="${em.formattedId}">EM-001</td>
+                            <td class="cell-type" th:text="${em.type.displayName}">Fire</td>
+                            <td class="cell-title">
+                                <span class="title-text" th:text="${em.title}">Title</span>
+                            </td>
+                            <td class="cell-location">
+                                <span class="location-text">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                                        <circle cx="12" cy="10" r="3"/>
+                                    </svg>
+                                    <span th:text="${em.locationName}">Location</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${em.severity.cssClass}"
+                                      th:text="${em.severity.displayName}">Critical</span>
+                            </td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="'status-' + ${em.status.cssClass}"
+                                      th:text="${em.status.displayName}">Active</span>
+                            </td>
+                            <td class="cell-time" th:text="${em.timeAgo}">8 min ago</td>
+                            <td class="cell-actions">
+                                <a th:href="@{/emergencies/{id}(id=${em.id})}"
+                                   class="action-btn" aria-label="View emergency details">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<!-- ===== CREATE EMERGENCY MODAL ===== -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog"
+     aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">Report New Emergency</h2>
+            <button class="modal-close" id="closeModalBtn" aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <form class="modal-body" th:action="@{/emergencies}" method="post"
+              th:object="${form}" novalidate>
+
+            <!-- Row 1: Type + Severity -->
+            <div class="form-row">
+                <div class="form-group" th:classappend="${#fields.hasErrors('type')} ? ' has-error' : ''">
+                    <label class="form-label" for="fType">
+                        Emergency Type <span class="req">*</span>
+                    </label>
+                    <select id="fType" class="form-select" th:field="*{type}">
+                        <option value="">Select type…</option>
+                        <option th:each="t : ${types}"
+                                th:value="${t.name()}"
+                                th:text="${t.displayName}">
+                        </option>
+                    </select>
+                    <span class="field-error" th:if="${#fields.hasErrors('type')}"
+                          th:errors="*{type}"></span>
+                </div>
+
+                <div class="form-group" th:classappend="${#fields.hasErrors('severity')} ? ' has-error' : ''">
+                    <label class="form-label" for="fSeverity">
+                        Severity <span class="req">*</span>
+                    </label>
+                    <select id="fSeverity" class="form-select" th:field="*{severity}">
+                        <option value="">Select severity…</option>
+                        <option th:each="s : ${severities}"
+                                th:value="${s.name()}"
+                                th:text="${s.displayName}">
+                        </option>
+                    </select>
+                    <span class="field-error" th:if="${#fields.hasErrors('severity')}"
+                          th:errors="*{severity}"></span>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('title')} ? ' has-error' : ''">
+                <label class="form-label" for="fTitle">
+                    Emergency Title <span class="req">*</span>
+                </label>
+                <input id="fTitle" type="text" class="form-input"
+                       placeholder="Brief description of the incident"
+                       th:field="*{title}" maxlength="200"/>
+                <span class="field-error" th:if="${#fields.hasErrors('title')}"
+                      th:errors="*{title}"></span>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label class="form-label" for="fDesc">Description</label>
+                <textarea id="fDesc" class="form-textarea" rows="3"
+                          placeholder="Detailed situation report…"
+                          th:field="*{description}" maxlength="2000"></textarea>
+            </div>
+
+            <!-- Location -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('locationName')} ? ' has-error' : ''">
+                <label class="form-label" for="fLocation">
+                    Location <span class="req">*</span>
+                </label>
+                <input id="fLocation" type="text" class="form-input"
+                       placeholder="e.g. MG Road, Sector 7, Bangalore"
+                       th:field="*{locationName}" maxlength="300"/>
+                <span class="field-error" th:if="${#fields.hasErrors('locationName')}"
+                      th:errors="*{locationName}"></span>
+            </div>
+
+            <!-- Row 2: Lat + Lng -->
+            <div class="form-row">
+                <div class="form-group" th:classappend="${#fields.hasErrors('latitude')} ? ' has-error' : ''">
+                    <label class="form-label" for="fLat">
+                        Latitude <span class="req">*</span>
+                    </label>
+                    <input id="fLat" type="number" class="form-input"
+                           placeholder="e.g. 12.9716" step="0.000001"
+                           min="-90" max="90"
+                           th:field="*{latitude}"/>
+                    <span class="field-error" th:if="${#fields.hasErrors('latitude')}"
+                          th:errors="*{latitude}"></span>
+                </div>
+
+                <div class="form-group" th:classappend="${#fields.hasErrors('longitude')} ? ' has-error' : ''">
+                    <label class="form-label" for="fLng">
+                        Longitude <span class="req">*</span>
+                    </label>
+                    <input id="fLng" type="number" class="form-input"
+                           placeholder="e.g. 77.5946" step="0.000001"
+                           min="-180" max="180"
+                           th:field="*{longitude}"/>
+                    <span class="field-error" th:if="${#fields.hasErrors('longitude')}"
+                          th:errors="*{longitude}"></span>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost" id="cancelModalBtn">Cancel</button>
+                <button type="submit" class="btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    Submit Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Auto-open modal if form had validation errors -->
+<div id="autoOpenTrigger"
+     th:data-open="${showCreateModal == true ? 'true' : 'false'}"
+     style="display:none" aria-hidden="true"></div>
+
+<script th:src="@{/js/emergencies.js}"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+
+</body>
+</html>
+

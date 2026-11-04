@@ -1,150 +1,186 @@
 # Dyuksha
 
-**AI-Native Resource Allocation System for Multi-Agency Emergency Response**
+**AI-native emergency response command center for coordinating police, fire services, hospitals, ambulances, and rescue teams.**
 
-Dyuksha coordinates police, fire services, hospitals, and rescue teams during emergencies. It is designed to eventually include AI-based resource allocation, real-time emergency monitoring, and flood detection.
+Dyuksha is a Spring Boot application. The frontend is served by the backend using Thymeleaf, so no separate frontend server is required.
 
-This repository contains the Dyuksha emergency response platform.
+## Quick start
 
----
-
-## Technology Stack
-
-| Layer        | Technology                  |
-|--------------|-----------------------------|
-| Language     | Java 21                     |
-| Framework    | Spring Boot 3.3.5           |
-| Build        | Maven 3.9 + Maven Wrapper   |
-| Templating   | Thymeleaf                   |
-| Persistence  | Spring Data JPA + H2        |
-| Dev tools    | Spring Boot DevTools        |
-
----
-
-## Prerequisites
-
-- **Java 21** or later — [Adoptium](https://adoptium.net)
-- **No Maven installation required** — the project includes the Maven wrapper (`mvnw` / `mvnw.cmd`)
-
-Verify your Java version:
-
-```bash
-java -version
-```
-
----
-
-## Running Locally
-
-### Unix / macOS
-
-```bash
-# Make the wrapper executable (first time only)
-chmod +x mvnw
-
-# Start the application
-./mvnw spring-boot:run
-```
-
-### Windows (PowerShell)
+### Windows PowerShell
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-The application starts on **http://localhost:8080**.
-
----
-
-## Building an Executable JAR
+### macOS/Linux
 
 ```bash
-# Unix / macOS
-./mvnw clean package
-
-# Windows
-.\mvnw.cmd clean package
+chmod +x mvnw
+./mvnw spring-boot:run
 ```
 
-The JAR is created at `target/dyuksha-0.1.0-SNAPSHOT.jar`.
+Open **http://localhost:8080** in your browser.
 
-Run it directly:
+## Requirements
+
+- Java 21 or later
+- Docker (optional)
+- Maven is not required because the project includes the Maven Wrapper
+
+Check Java:
 
 ```bash
-java -jar target/dyuksha-0.1.0-SNAPSHOT.jar
+java -version
 ```
 
----
+## Application URLs
+
+| URL | Purpose |
+|---|---|
+| `/` | Command center dashboard |
+| `/emergencies` | Emergency management |
+| `/resources` | Resource management |
+| `/allocation` | Resource allocation |
+| `/h2-console` | H2 database console for local development |
 
 ## Configuration
 
-All settings are in `backend/src/main/resources/application.properties`.
+Configuration is stored in `backend/src/main/resources/application.properties`.
 
-Key settings can be overridden with environment variables:
+The application automatically uses Render's assigned port:
 
-| Environment Variable | Default   | Description               |
-|----------------------|-----------|---------------------------|
-| `PORT`               | `8080`    | HTTP port                 |
-| `DB_USERNAME`        | `dyuksha` | H2 database username      |
-| `DB_PASSWORD`        | *(empty)* | H2 database password      |
+```properties
+server.port=${PORT:8080}
+```
 
-Example (Unix):
+If `PORT` is not set, it uses port `8080`.
+
+| Variable | Default | Description |
+|---|---:|---|
+| `PORT` | `8080` | HTTP port used by Spring Boot and Render |
+| `DB_USERNAME` | `dyuksha` | H2 database username |
+| `DB_PASSWORD` | empty | H2 database password |
+
+Example:
+
+```powershell
+$env:PORT=9090
+.\mvnw.cmd spring-boot:run
+```
 
 ```bash
 PORT=9090 ./mvnw spring-boot:run
 ```
 
----
+## Database
 
-## H2 Database Console
+Dyuksha uses a file-based H2 database:
 
-The embedded H2 console is available during development at:
-
-**http://localhost:8080/h2-console**
-
-| Field    | Value                                                   |
-|----------|---------------------------------------------------------|
-| JDBC URL | `jdbc:h2:file:./data/dyuksha-db`                        |
-| Username | `dyuksha` (or value of `DB_USERNAME`)                   |
-| Password | *(leave blank by default)*                              |
-
-Database files are stored in the `data/` directory (excluded from Git).
-
----
-
-## Project Structure
-
+```text
+jdbc:h2:file:./data/dyuksha-db;AUTO_SERVER=TRUE
 ```
+
+For the local H2 console, use:
+
+| Field | Value |
+|---|---|
+| JDBC URL | `jdbc:h2:file:./data/dyuksha-db` |
+| User | `dyuksha`, or the value of `DB_USERNAME` |
+| Password | The value of `DB_PASSWORD`, empty by default |
+
+The local database is stored in `data/`, which is ignored by Git. Render's filesystem is temporary unless a persistent disk is configured, so configure persistent storage if production data must survive redeployments.
+
+## Docker
+
+Build the image:
+
+```bash
+docker build -t dyuksha .
+```
+
+Run it:
+
+```bash
+docker run --rm -p 8080:8080 dyuksha
+```
+
+Run it on another port:
+
+```bash
+docker run --rm -e PORT=9090 -p 9090:9090 dyuksha
+```
+
+The root `Dockerfile` builds the application with Maven and runs it on the `PORT` environment variable.
+
+## Deploying to Render
+
+### Docker deployment
+
+1. Create a new **Web Service** in Render.
+2. Connect this repository.
+3. Select **Docker** as the runtime.
+4. Deploy.
+
+Render provides `PORT` automatically, and the application reads it from `server.port=${PORT:8080}`.
+
+### Maven deployment
+
+Use these settings if deploying without Docker:
+
+| Setting | Value |
+|---|---|
+| Runtime | Java |
+| Build command | `./mvnw clean package -DskipTests` |
+| Start command | `java -jar target/dyuksha-0.1.0-SNAPSHOT.jar` |
+
+## Build, test, and run the JAR
+
+### Windows PowerShell
+
+```powershell
+.\mvnw.cmd clean package
+.\mvnw.cmd test
+java -jar target\dyuksha-0.1.0-SNAPSHOT.jar
+```
+
+### macOS/Linux
+
+```bash
+./mvnw clean package
+./mvnw test
+java -jar target/dyuksha-0.1.0-SNAPSHOT.jar
+```
+
+## Project structure
+
+```text
 dyuksha/
 ├── backend/
 │   └── src/
-│       ├── main/java/com/dyuksha/       # Spring Boot backend
-│       ├── main/resources/              # Backend configuration
+│       ├── main/java/com/dyuksha/       # Controllers, services, models, repositories
+│       ├── main/resources/              # Spring configuration
 │       └── test/java/com/dyuksha/       # Backend tests
 ├── frontend/
-│   ├── templates/                       # Thymeleaf HTML templates
-│   └── static/                          # CSS, JavaScript, and images
-├── .mvn/wrapper/                         # Maven wrapper files
-├── pom.xml
-├── mvnw                                  # Unix wrapper
-├── mvnw.cmd                              # Windows wrapper
-├── .gitignore
+│   ├── templates/                       # Thymeleaf HTML pages and fragments
+│   └── static/                          # CSS and JavaScript
+├── Dockerfile                           # Multi-stage production image
+├── pom.xml                              # Maven build configuration
+├── mvnw / mvnw.cmd                      # Maven Wrapper scripts
+├── data/                                # Local H2 data, ignored by Git
 └── README.md
 ```
 
----
+The Maven configuration maps `backend/src` and `frontend/` into the standard Spring Boot build, so the existing Maven and Docker commands continue to work after the folder organization.
 
-## Development Phases
+## Technology
 
-| Phase | Description                        | Status      |
-|-------|------------------------------------|-------------|
-| 1     | Project foundation & landing page  | ✅ Complete |
-| 2     | Core domain models & dashboard     | Planned     |
-| 3     | Resource allocation engine         | Planned     |
-| 4     | AI agent integration               | Planned     |
-| 5     | Flood detection & monitoring       | Planned     |
-
----
+- Java 21
+- Spring Boot 3.3.5
+- Spring MVC and Thymeleaf
+- Spring Data JPA
+- H2
+- Maven
+- Leaflet for the live operational map
 
 ## License
 

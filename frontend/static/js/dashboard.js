@@ -1,5 +1,5 @@
 /**
- * Dyuksha — Command Center Dashboard
+ * CrisisFusion — Command Center Dashboard
  * Phase 2 Frontend Foundation
  *
  * Responsibilities:
@@ -56,15 +56,15 @@ const DEFAULT_ACTIVITIES = [
     { severity: 'medium',   text: '<strong>EM-010</strong> Search party deployed to Lalbagh — 2 officers', time: '52 min ago' },
     { severity: 'info',     text: 'System: Shift handover completed — Ops Commander assumed control', time: '1 hr ago' },
     { severity: 'low',      text: '<strong>EM-009</strong> BESCOM notified of power line down in HSR Layout', time: '1.5 hr ago' },
-    { severity: 'system',   text: 'System: Dyuksha v0.1.0-SNAPSHOT initialised — All subsystems nominal', time: '2 hr ago' }
+    { severity: 'system',   text: 'System: CrisisFusion v0.1.0-SNAPSHOT initialised — All subsystems nominal', time: '2 hr ago' }
 ];
 
 /* ============================================================
    DATA SOURCE INITIALISATION
    ============================================================ */
 
-// Prefer dynamic DB data injected via window.DYUKSHA_CONFIG if available
-const liveConfig = window.DYUKSHA_CONFIG || {};
+// Prefer dynamic DB data injected via window.CRISISFUSION_CONFIG if available
+const liveConfig = window.CRISISFUSION_CONFIG || {};
 
 const EMERGENCIES = (Array.isArray(liveConfig.emergencies) && liveConfig.emergencies.length > 0)
     ? liveConfig.emergencies.map(e => ({

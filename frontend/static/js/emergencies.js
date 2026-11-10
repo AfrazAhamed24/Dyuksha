@@ -1,5 +1,5 @@
 /**
- * Dyuksha — Emergencies Management View Scripts
+ * CrisisFusion — Emergencies Management View Scripts
  */
 
 'use strict';

@@ -1,12 +1,12 @@
 <div align="center">
 
 ```
-██████╗ ██╗   ██╗██╗   ██╗██╗  ██╗███████╗██╗  ██╗ █████╗
-██╔══██╗╚██╗ ██╔╝██║   ██║██║ ██╔╝██╔════╝██║  ██║██╔══██╗
-██║  ██║ ╚████╔╝ ██║   ██║█████╔╝ ███████╗███████║███████║
-██║  ██║  ╚██╔╝  ██║   ██║██╔═██╗ ╚════██║██╔══██║██╔══██║
-██████╔╝   ██║   ╚██████╔╝██║  ██╗███████║██║  ██║██║  ██║
-╚═════╝    ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝
+██████╗██████╗ ██╗███████╗██╗███████╗    ███████╗██╗   ██╗███████╗██╗ ██████╗ ███╗   ██╗
+██╔════╝██╔══██╗██║██╔════╝██║██╔════╝    ██╔════╝██║   ██║██╔════╝██║██╔═══██╗████╗  ██║
+██║     ██████╔╝██║███████╗██║███████╗    █████╗  ██║   ██║███████╗██║██║   ██║██╔██╗ ██║
+██║     ██╔══██╗██║╚════██║██║╚════██║    ██╔══╝  ██║   ██║╚════██║██║██║   ██║██║╚██╗██║
+╚██████╗██║  ██║██║███████║██║███████║    ██║     ╚██████╔╝███████║██║╚██████╔╝██║ ╚████║
+ ╚═════╝╚═╝  ╚═╝╚═╝╚══════╝╚═╝╚══════╝    ╚═╝      ╚═════╝ ╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝
 ```
 
 ### **AI-Native Multi-Agency Emergency Response System**
@@ -32,11 +32,11 @@
 
 ---
 
-## 🔥 What is Dyuksha?
+## 🔥 What is Crisis Fusion?
 
-> **Dyuksha** is a production-grade emergency operations command center that unifies police, fire services, hospitals, ambulances, and rescue teams under a single real-time dashboard — powered by an intelligent resource allocation engine.
+> **Crisis Fusion** is a production-grade emergency operations command center that unifies police, fire services, hospitals, ambulances, and rescue teams under a single real-time dashboard — powered by an intelligent resource allocation engine.
 
-When a flood hits, a building collapses, or a mass-casualty event unfolds, every second counts. Dyuksha gives incident commanders a **single pane of glass** to:
+When a flood hits, a building collapses, or a mass-casualty event unfolds, every second counts. Crisis Fusion gives incident commanders a **single pane of glass** to:
 
 - 📍 **See** every emergency pinned on a live operational map
 - 🔢 **Score** available resources using AI-weighted criteria
@@ -239,7 +239,7 @@ The application seeds **25 resources** and **10 emergency incidents** automatica
 
 ## 🗃️ Database
 
-Dyuksha uses a **file-based H2 database** — no external database setup required.
+Crisis Fusion uses a **file-based H2 database** — no external database setup required.
 
 ```properties
 JDBC URL:  jdbc:h2:file:./data/dyuksha-db
@@ -423,7 +423,7 @@ java -jar target/dyuksha-0.1.0-SNAPSHOT.jar
 
 **Built for responders. Designed for clarity. Engineered for speed.**
 
-*Dyuksha — because in an emergency, the right resource at the right time saves lives.*
+*Crisis Fusion — because in an emergency, the right resource at the right time saves lives.*
 
 ---
 
